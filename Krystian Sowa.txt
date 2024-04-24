@@ -1,0 +1,170 @@
+--1
+SELECT
+    first_name "IMIE",
+    last_name  "NAZWISKO"
+FROM
+    emp
+WHERE
+    salary < 1300
+ORDER BY
+    last_name;
+--Uzycie ORDER BY aby posortowac liste imion i nazwisk wzgledem nazwisk
+--2
+SELECT
+    concat(date_ordered,
+           concat(' ',
+                  SUM(total))) "DATA I SUMA ZAMOWIEN"
+FROM
+    ord
+GROUP BY
+    date_ordered;
+--Uzycie polecenia concat aby polaczyc dwie wartosci w jedna
+--3
+SELECT
+    first_name "IMIE",
+    last_name  "NAZWISKO"
+FROM
+    emp
+WHERE
+    title LIKE 'Stock Clerk'
+    AND salary > (
+        SELECT
+            AVG(salary)
+        FROM
+            emp
+        WHERE
+            title LIKE 'Warehouse Manager'
+    );
+--Uzycie podzapytania aby pobrac srednia ilosc zarobkow na stanowisku Warehouse manager oraz uzycie
+--4
+SELECT
+    COUNT(*) "ILOSC PRACOWNIKOW"
+FROM
+    emp
+WHERE
+    salary < (
+        SELECT
+            AVG(salary)
+        FROM
+            emp
+    );
+--Uzycie podzapytania do okreslenia sredniej wartosci zarobkow
+--5
+SELECT
+    first_name "IMIE",
+    last_name  "NAZWISKO"
+FROM
+    emp
+WHERE
+    months_between(TO_DATE('01/03/2021', 'DD/MM/YYYY'), start_date) / 12 > 30;
+--Funkcja to_date zamienia podanego "stringa" w format daty a nastepnie funkcja months_between zwraca ilosc miesiecy
+--miedzy dwoma datami ktora potem jest podzielona przez 12
+--6
+SELECT
+    sales_rep_id "ID SPRZEDAWCY",
+    SUM(total)   "Suma zamówień"
+FROM
+    ord
+GROUP BY
+    sales_rep_id;
+--Uzycie funkcji SUM aby zsumowac wartosci w kolumnie total oraz uzycie GROUP BY aby pogrupowac wyniki
+--7
+SELECT
+    sales_rep_id "ID SPRZEDAWCY",
+    total_sum
+FROM
+    (
+        SELECT
+            sales_rep_id,
+            SUM(total) total_sum
+        FROM
+            ord
+        GROUP BY
+            sales_rep_id
+    ) a1
+WHERE
+    total_sum = (
+        SELECT
+            MAX(total_sum)
+        FROM
+            (
+                SELECT
+                    sales_rep_id,
+                    SUM(total) total_sum
+                FROM
+                    ord
+                GROUP BY
+                    sales_rep_id
+            ) a2
+    );
+--Uzycie podzapytan aby znalezc najwieksza wartosc sumy zamowien
+--8
+SELECT
+    e.last_name,
+    a1.total_sum
+FROM
+         (
+        SELECT
+            sales_rep_id,
+            SUM(total) total_sum
+        FROM
+            ord
+        GROUP BY
+            sales_rep_id
+    ) a1
+    JOIN emp e ON a1.sales_rep_id = e.id
+WHERE
+    a1.total_sum = (
+        SELECT
+            MAX(a2.total_sum)
+        FROM
+            (
+                SELECT
+                    sales_rep_id,
+                    SUM(total) total_sum
+                FROM
+                    ord
+                GROUP BY
+                    sales_rep_id
+            ) a2
+    );
+--Uzycie JOIN aby polaczyc dwie tabele oraz uzycie podzapytan aby znalezc najwieksza wartosc sumy zamowien
+--9
+SELECT
+    start_date "DATA ZATRUDNIENIA",
+    COUNT(*)   "Liczba osób zatrudnionych"
+FROM
+    emp
+GROUP BY
+    start_date
+ORDER BY
+    start_date;
+--Uzycie funkcji COUNT aby policzyc ilosc osob zatrudnionych w danym dniu oraz uzycie ORDER BY aby posortowac wyniki
+--10
+SELECT
+    product.name "NAZWA"
+FROM
+         product
+    INNER JOIN inventory ON product.id = inventory.product_id
+WHERE
+    inventory.out_of_stock_explanation IS NOT NULL;
+--Uzycie INNER JOIN aby polaczyc dwie tabele oraz uzycie WHERE aby znalezc produkty ktore sa niedostepne
+--11
+SELECT
+    product.name "NAZWA"
+FROM
+         product
+    INNER JOIN inventory ON product.id = inventory.product_id
+GROUP BY
+    product.name
+HAVING
+    SUM(inventory.amount_in_stock) < 500;
+--Uzycie INNER JOIN aby polaczyc dwie tabele oraz uzycie GROUP BY aby pogrupowac wyniki oraz uzycie HAVING aby znalezc produkty ktore maja mniej niz 500 sztuk
+--12
+SELECT
+    name "NAZWA"
+FROM
+    product
+WHERE
+    regexp_count(name, ' ') = 2;
+--Uzycie funkcji REGEXP_COUNT aby policzyc ilosc spacji w nazwie produktu
